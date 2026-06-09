@@ -17,11 +17,17 @@ porcaro_2026/
  │   └── porcaro_2026/                # Core extension package
  │       ├── config/                  # Extension configuration (extension.toml)
  │       └── porcaro_2026/
- │           ├── assets/              # 3D models (USD files) and MIDI datasets
+ │           ├── assets/              # ⚠️ MUST CONTAIN: porcaro.usd, sneadrum.usd, drum.usd
+ |           ├── data/                # ⚠️ MUST CONTAIN: pam_force_map.csvdatasets
  │           ├── tasks/direct/porcaro_2026/
- │           │   ├── envs/            # Main environment definitions (DirectEnv)
- │           │   ├── actions/         # PAM dynamics & delayed action models (Model B)
- │           │   └── rewards/         # Event-based rhythm reward functions
+ │               ├── porcaro_2026_env.py      # Main DirectRLEnv definition
+ │               ├── porcaro_2026_env_cfg.py  # Environment configuration (Model B, DR)
+ │               ├── rhythm_generator.py      # Target force & rhythm generation logic
+ │               ├── actions/         # PAM dynamics & delayed action controllers (Model B)
+ │               ├── agents/          # RSL-RL hyperparameters (PPO configs)
+ │               ├── cfg/             # Assets, sensors, controller, and rewards parameters
+ │               ├── logging/         # Datalogger managers for Sim-to-Real analysis
+ │               └── rewards/         # Event-based rhythm reward functions
  ├── pyproject.toml                   # Python package dependencies
  └── README.md
 ```
@@ -81,14 +87,30 @@ You can launch the training and evaluation scripts directly from the terminal. W
 Training
 To train the dual-arm drumming policy from scratch:
 ```bash
-python scripts/rsl_rl/train.py --task=Isaac-Porcaro-Dual-Direct-v0
+python scripts/rsl_rl/train.py --task Template-Porcaro-2026-ModelB-DR-v0
 ```
 
 Evaluation (Playing)
 To watch the trained agent perform in the simulation GUI:
 ```bash
-python scripts/rsl_rl/play.py --task=Isaac-Porcaro-Dual-Direct-v0
+python scripts/rsl_rl/play.py --task Template-Porcaro-2026-ModelB-DR-v0
 ```
 
-## 🤖 3D Assets & MIDI Datasets
-The required 3D robot models (.usd) and the evaluation MIDI datasets (Groove MIDI Dataset format) are included in the source/porcaro_2026/porcaro_2026/assets/ directory. The environment will automatically load them upon initialization.
+## 🤖 3D Assets & Data Setup (⚠️ CRITICAL)
+Due to file size and licensing, 3D models and raw CSV data may need to be placed manually before running the environment. The environment's asset loader explicitly searches for the data/ and assets/ directories at the project root.
+
+1. Robot and Drum Models (assets/)
+Place the following .usd files into the assets/ directory:
+
+porcaro.usd
+
+sneadrum.usd
+
+drum.usd (Important: sneadrum.usd is a scaled reference of drum.usd. Due to USD architecture, if drum.usd is missing, Isaac Sim will not throw an error, but the drum will be invisible in the simulation GUI. Both files must be present.)
+
+2. Pneumatic Force Maps (data/)
+Place the PAM hysteresis/force CSV maps into the data/ directory:
+
+pam_force_map.csv
+
+pam_force_0_map.csv (If required by your configuration)
