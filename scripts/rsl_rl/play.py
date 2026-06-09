@@ -7,6 +7,10 @@
 
 """Launch Isaac Sim Simulator first."""
 
+"""
+python scripts/rsl_rl/play.py   --task Template-Porcaro-Direct-ModelB --num_envs 1 --video  --checkpoint=logs/rsl_rl/porcaro_rslrl_lstm_modelB_DR/2026-02-13_16-15-01/model_2700.pt
+"""
+
 import argparse
 import sys
 
@@ -115,6 +119,14 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # set the log directory for the environment (works for all environment types)
     env_cfg.log_dir = log_dir
 
+    # --- ▼▼▼ 追加: Play時のみロギングを強制ON ▼▼▼ ---
+    if hasattr(env_cfg, "logging"):
+        env_cfg.logging.enabled = True
+        print("[INFO] Play mode detected: Logging enabled (force).")
+    if hasattr(env_cfg, "reward_logging"):
+        env_cfg.reward_logging.enabled = True
+    # ------------------------------------------------
+
     # create isaac environment
     env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)
 
@@ -177,28 +189,31 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # reset environment
     obs = env.get_observations()
     timestep = 0
-    # simulate environment
-    while simulation_app.is_running():
-        start_time = time.time()
-        # run everything in inference mode
-        with torch.inference_mode():
-            # agent stepping
-            actions = policy(obs)
-            # env stepping
-            obs, _, _, _ = env.step(actions)
-        if args_cli.video:
-            timestep += 1
-            # Exit the play loop after recording one video
-            if timestep == args_cli.video_length:
-                break
+    # --- ▼▼▼ 修正: ループを try-finally で囲む ▼▼▼ ---
+    print("\n[INFO] Simulation starting. Press Ctrl+C to stop and save logs.\n")
+    try:
+        while simulation_app.is_running():
+            start_time = time.time()
+            with torch.inference_mode():
+                actions = policy(obs)
+                obs, _, _, _ = env.step(actions)
+            
+            if args_cli.video:
+                timestep += 1
+                if timestep == args_cli.video_length:
+                    break
 
-        # time delay for real-time evaluation
-        sleep_time = dt - (time.time() - start_time)
-        if args_cli.real_time and sleep_time > 0:
-            time.sleep(sleep_time)
+            sleep_time = dt - (time.time() - start_time)
+            if args_cli.real_time and sleep_time > 0:
+                time.sleep(sleep_time)
 
-    # close the simulator
-    env.close()
+    except KeyboardInterrupt:
+        print("\n[INFO] KeyboardInterrupt received. Stopping simulation...")
+
+    finally:
+        print("[INFO] Closing environment and saving logs...")
+        env.close()
+    # ------------------------------------------------
 
 
 if __name__ == "__main__":

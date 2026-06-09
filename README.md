@@ -1,135 +1,94 @@
-# Template for Isaac Lab Projects
+# Porcaro 2026: Embodied AI Dual-Arm Drumming Project
 
-## Overview
+This repository contains the official implementation of the paper:
+*"Embodied Drumming: Sim-to-Real Reinforcement Learning for Pneumatic Musculoskeletal Robots via Generalized Rhythm Modeling"* (Submitted to IROS 2026).
 
-This project/repository serves as a template for building projects or extensions based on Isaac Lab.
-It allows you to develop in an isolated environment, outside of the core Isaac Lab repository.
+This project simulates and trains **Porcaro**, a drumming robot driven by Pneumatic Artificial Muscles (PAMs), utilizing the highly parallelized **NVIDIA Isaac Lab** environment (Direct Workflow).
 
-**Key Features:**
+## 📁 Repository Structure
 
-- `Isolation` Work outside the core Isaac Lab repository, ensuring that your development efforts remain self-contained.
-- `Flexibility` This template is set up to allow your code to be run as an extension in Omniverse.
+```text
+porcaro_2026/
+ ├── scripts/                         # Execution scripts for training and inference
+ │   ├── rsl_rl/                      
+ │   │   ├── train.py                 # Main training script
+ │   │   └── play.py                  # Inference and visualization script
+ ├── source/
+ │   └── porcaro_2026/                # Core extension package
+ │       ├── config/                  # Extension configuration (extension.toml)
+ │       └── porcaro_2026/
+ │           ├── assets/              # 3D models (USD files) and MIDI datasets
+ │           ├── tasks/direct/porcaro_2026/
+ │           │   ├── envs/            # Main environment definitions (DirectEnv)
+ │           │   ├── actions/         # PAM dynamics & delayed action models (Model B)
+ │           │   └── rewards/         # Event-based rhythm reward functions
+ ├── pyproject.toml                   # Python package dependencies
+ └── README.md
+```
 
-**Keywords:** extension, template, isaaclab
 
-## Installation
+## 🛠️ Requirements & Installation
+We recommend using Miniconda to manage your Python environment. By following these steps, you can set up the environment exactly as it was used in our experiments.
 
-- Install Isaac Lab by following the [installation guide](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html).
-  We recommend using the conda or uv installation as it simplifies calling Python scripts from the terminal.
-
-- Clone or copy this project/repository separately from the Isaac Lab installation (i.e. outside the `IsaacLab` directory):
-
-- Using a python interpreter that has Isaac Lab installed, install the library in editable mode using:
-
-    ```bash
-    # use 'PATH_TO_isaaclab.sh|bat -p' instead of 'python' if Isaac Lab is not installed in Python venv or conda
-    python -m pip install -e source/porcaro_2026
-
-- Verify that the extension is correctly installed by:
-
-    - Listing the available tasks:
-
-        Note: It the task name changes, it may be necessary to update the search pattern `"Template-"`
-        (in the `scripts/list_envs.py` file) so that it can be listed.
-
-        ```bash
-        # use 'FULL_PATH_TO_isaaclab.sh|bat -p' instead of 'python' if Isaac Lab is not installed in Python venv or conda
-        python scripts/list_envs.py
-        ```
-
-    - Running a task:
-
-        ```bash
-        # use 'FULL_PATH_TO_isaaclab.sh|bat -p' instead of 'python' if Isaac Lab is not installed in Python venv or conda
-        python scripts/<RL_LIBRARY>/train.py --task=<TASK_NAME>
-        ```
-
-    - Running a task with dummy agents:
-
-        These include dummy agents that output zero or random agents. They are useful to ensure that the environments are configured correctly.
-
-        - Zero-action agent
-
-            ```bash
-            # use 'FULL_PATH_TO_isaaclab.sh|bat -p' instead of 'python' if Isaac Lab is not installed in Python venv or conda
-            python scripts/zero_agent.py --task=<TASK_NAME>
-            ```
-        - Random-action agent
-
-            ```bash
-            # use 'FULL_PATH_TO_isaaclab.sh|bat -p' instead of 'python' if Isaac Lab is not installed in Python venv or conda
-            python scripts/random_agent.py --task=<TASK_NAME>
-            ```
-
-### Set up IDE (Optional)
-
-To setup the IDE, please follow these instructions:
-
-- Run VSCode Tasks, by pressing `Ctrl+Shift+P`, selecting `Tasks: Run Task` and running the `setup_python_env` in the drop down menu.
-  When running this task, you will be prompted to add the absolute path to your Isaac Sim installation.
-
-If everything executes correctly, it should create a file .python.env in the `.vscode` directory.
-The file contains the python paths to all the extensions provided by Isaac Sim and Omniverse.
-This helps in indexing all the python modules for intelligent suggestions while writing code.
-
-### Setup as Omniverse Extension (Optional)
-
-We provide an example UI extension that will load upon enabling your extension defined in `source/porcaro_2026/porcaro_2026/ui_extension_example.py`.
-
-To enable your extension, follow these steps:
-
-1. **Add the search path of this project/repository** to the extension manager:
-    - Navigate to the extension manager using `Window` -> `Extensions`.
-    - Click on the **Hamburger Icon**, then go to `Settings`.
-    - In the `Extension Search Paths`, enter the absolute path to the `source` directory of this project/repository.
-    - If not already present, in the `Extension Search Paths`, enter the path that leads to Isaac Lab's extension directory directory (`IsaacLab/source`)
-    - Click on the **Hamburger Icon**, then click `Refresh`.
-
-2. **Search and enable your extension**:
-    - Find your extension under the `Third Party` category.
-    - Toggle it to enable your extension.
-
-## Code formatting
-
-We have a pre-commit template to automatically format your code.
-To install pre-commit:
-
+**0. Setup a Miniconda**
 ```bash
-pip install pre-commit
+# 1. Create a directory for installation
+mkdir -p ~/miniconda3
+
+# 2. Download the installer for Linux (using wget)
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
+
+# 3. Run the installation in silent mode.
+bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+
+# 4. Remove unnecessary installers
+rm ~/miniconda3/miniconda.sh
+
+# 5. Initialization settings to associate the conda command with a shell (for bash)
+~/miniconda3/bin/conda init bash
 ```
 
-Then you can run pre-commit with:
-
+**1. Create a Miniconda Environment**
 ```bash
-pre-commit run --all-files
+conda create -n porcaro_env python=3.10
+conda activate porcaro_env
+```
+**2. Install NVIDIA Isaac Lab**
+
+This project is built as an extension for NVIDIA Isaac Lab. You must install the core Isaac Lab framework first.
+Please follow the Official Isaac Lab Installation Guide.
+
+(Note: Ensure Isaac Lab is installed in your porcaro_env conda environment).
+
+**3. Install the Porcaro 2026 Repository**
+
+Once Isaac Lab is successfully installed, clone this repository and install it as an editable python package.
+```bash
+# Clone the repository
+git clone [https://github.com/Tsukasa-B/porcaro_2026.git](https://github.com/Tsukasa-B/porcaro_2026.git)
+cd porcaro_2026
+
+# Install the extension into your Isaac Lab environment
+# (Replace the path below with your actual Isaac Lab path)
+/path/to/IsaacLab/isaaclab.sh -p -m pip install -e source/porcaro_2026
 ```
 
-## Troubleshooting
+*That's it! The environment is now fully linked and ready to run.*
 
-### Pylance Missing Indexing of Extensions
+## 🎮 Usage
+You can launch the training and evaluation scripts directly from the terminal. We use rsl_rl for highly optimized Proximal Policy Optimization (PPO).
 
-In some VsCode versions, the indexing of part of the extensions is missing.
-In this case, add the path to your extension in `.vscode/settings.json` under the key `"python.analysis.extraPaths"`.
-
-```json
-{
-    "python.analysis.extraPaths": [
-        "<path-to-ext-repo>/source/porcaro_2026"
-    ]
-}
+Training
+To train the dual-arm drumming policy from scratch:
+```bash
+python scripts/rsl_rl/train.py --task=Isaac-Porcaro-Dual-Direct-v0
 ```
 
-### Pylance Crash
-
-If you encounter a crash in `pylance`, it is probable that too many files are indexed and you run out of memory.
-A possible solution is to exclude some of omniverse packages that are not used in your project.
-To do so, modify `.vscode/settings.json` and comment out packages under the key `"python.analysis.extraPaths"`
-Some examples of packages that can likely be excluded are:
-
-```json
-"<path-to-isaac-sim>/extscache/omni.anim.*"         // Animation packages
-"<path-to-isaac-sim>/extscache/omni.kit.*"          // Kit UI tools
-"<path-to-isaac-sim>/extscache/omni.graph.*"        // Graph UI tools
-"<path-to-isaac-sim>/extscache/omni.services.*"     // Services tools
-...
+Evaluation (Playing)
+To watch the trained agent perform in the simulation GUI:
+```bash
+python scripts/rsl_rl/play.py --task=Isaac-Porcaro-Dual-Direct-v0
 ```
+
+## 🤖 3D Assets & MIDI Datasets
+The required 3D robot models (.usd) and the evaluation MIDI datasets (Groove MIDI Dataset format) are included in the source/porcaro_2026/porcaro_2026/assets/ directory. The environment will automatically load them upon initialization.

@@ -1,26 +1,4 @@
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
-# All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
-
 # source/porcaro_2026/porcaro_2026/tasks/direct/porcaro_2026/agents/rsl_rl_ppo_cfg.py
-
-"""
-Porcaro 2026: RSL-RL Agent Configuration Guide
-
-[脳みそ（ネットワーク）の切り替え方法]
-本設定ファイルは RSL-RL の PPO Runner 定義です。実験に応じて以下の手順でネットワーク構造を切り替えてください。
-
-1. ネットワーク構造の定義:
-   - agents/rsl_rl_ppo_mlp_cfg.py : MLP (全結合ネットワーク) 用設定
-   - agents/rsl_rl_ppo_lstm_cfg.py: LSTM (記憶保持ネットワーク) 用設定
-   これを以下の設定へコピペする
-
-
-3. 実験管理:
-   - クラス名は全て "PPORunnerCfg" で統一しています。
-   - experiment_nameを実験ごとに分けて管理できるようにしてください。
-"""
 
 from isaaclab.utils import configclass
 

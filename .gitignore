@@ -1,71 +1,114 @@
-# C++
-**/cmake-build*/
-**/build*/
-**/*.so
-**/*.log*
+# ==============================================================================
+# Porcaro 2026 Project .gitignore
+# ==============================================================================
 
-# Omniverse
+# ------------------------------------------------------------------------------
+# 1. Media & Images (自動生成される解析画像や動画を除外)
+# ------------------------------------------------------------------------------
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.svg
+**/*.pdf
+**/*.mp4
+**/*.gif
+# 【例外許可】README用の画像などは以下のフォルダに入れればGitにプッシュされます
+!docs/images/
+!assets/images/
+
+# ------------------------------------------------------------------------------
+# 2. Experimental Data (重い実験データを除外)
+# ------------------------------------------------------------------------------
+**/*.csv
+**/*.dat
+**/*.npy
+**/*.npz
+# 【例外許可】ロボットの制御に必要な参照テーブル（CSV）のみGit管理に含める
+!source/porcaro_2026/porcaro_2026/tasks/tables/*.csv
+
+# ------------------------------------------------------------------------------
+# 3. 3D Models / Omniverse Assets (知的財産の保護)
+# ------------------------------------------------------------------------------
 **/*.dmp
 **/.thumbs
-
-# No USD files allowed in the repo
+# 基本的にUSDファイルは重く、流出防止のため除外する
 **/*.usd
 **/*.usda
 **/*.usdc
 **/*.usdz
 
-# Python
-.DS_Store
+# ------------------------------------------------------------------------------
+# 4. Checkpoints & Machine Learning Outputs
+# ------------------------------------------------------------------------------
+# RL-Games / RSL-RL
+**/runs/*
+**/logs/*
+**/recordings/*
+# Pre-Trained Checkpoints (どこに保存されても除外)
+**/*.pt
+**/*.pth
+**/*.onnx
+/.pretrained_checkpoints/
+/datasets/
+
+# ------------------------------------------------------------------------------
+# 5. Python / Environments
+# ------------------------------------------------------------------------------
+**/.venv/
+**/venv/
+**/env/
 **/*.egg-info/
 **/__pycache__/
 **/.pytest_cache/
 **/*.pyc
 **/*.pb
 
-# Docker/Singularity
-**/*.sif
-docker/cluster/exports/
-docker/.container.cfg
-
-# IDE
+# ------------------------------------------------------------------------------
+# 6. IDE / OS Files
+# ------------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
 **/.idea/
+# ルートの .vscode/ は共有設定として残し、他階層の .vscode/ は除外する
 **/.vscode/
-# Don't ignore the top-level .vscode directory as it is
-# used to configure VS Code settings
-!.vscode
+!.vscode/
+# （VS Code個人の環境パス設定は共有しない）
+.vscode/.python.env
 
-# Outputs
+# ------------------------------------------------------------------------------
+# 7. Outputs & Telemetry (WandB, Neptune, etc.)
+# ------------------------------------------------------------------------------
 **/output/*
 **/outputs/*
 **/videos/*
 **/wandb/*
 **/.neptune/*
-docker/artifacts/
 *.tmp
 
-# Doc Outputs
-**/docs/_build/*
-**/generated/*
-
-# Isaac-Sim packman
+# ------------------------------------------------------------------------------
+# 8. C++ / Build / Packman
+# ------------------------------------------------------------------------------
+**/cmake-build*/
+**/build*/
+**/*.so
+**/*.log*
 _isaac_sim*
 _repo
 _build
 .lastformat
 
-# RL-Games
-**/runs/*
-**/logs/*
-**/recordings/*
-
-# Pre-Trained Checkpoints
-/.pretrained_checkpoints/
-
-# Teleop Recorded Dataset
-/datasets/
-
-# Tests
-tests/
-
-# Docker history
+# ------------------------------------------------------------------------------
+# 9. Docker / Singularity
+# ------------------------------------------------------------------------------
+**/*.sif
+docker/cluster/exports/
+docker/.container.cfg
+docker/artifacts/
 .isaac-lab-docker-history
+
+# ------------------------------------------------------------------------------
+# 10. Tests & Docs
+# ------------------------------------------------------------------------------
+tests/
+**/docs/_build/*
+**/generated/*
